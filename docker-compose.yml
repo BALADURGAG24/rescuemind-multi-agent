@@ -1,0 +1,40 @@
+# RescueMind AI – Docker Compose
+# Run: docker-compose up -d
+
+version: "3.9"
+
+services:
+  rescuemind-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: rescuemind-app
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
+      - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
+      - DEMO_MODE=${DEMO_MODE:-true}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+    volumes:
+      - rescuemind-db:/app/database
+      - rescuemind-logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.rescuemind.rule=Host(`rescuemind.localhost`)"
+
+volumes:
+  rescuemind-db:
+    driver: local
+  rescuemind-logs:
+    driver: local

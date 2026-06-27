@@ -1,0 +1,1 @@
+"""RescueMind AI"""
